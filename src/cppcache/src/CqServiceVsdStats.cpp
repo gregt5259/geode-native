@@ -26,6 +26,9 @@
 
 #include "util/concurrent/spinlock_mutex.hpp"
 
+const char* cqServiceStatsName = "CqServiceStatistics";
+const char* cqServiceStatsDesc = "Statistics for this cq Service";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace apache {
@@ -66,7 +69,8 @@ StatisticsType* CqServiceStatType::getStatType() {
         "The total number of Cqs on the client for this cq Service", "entries",
         largerIsBetter);
 
-    statsType = factory->createType(statsName, statsDesc, m_stats, 5);
+    statsType =
+        factory->createType(cqServiceStatsName, cqServiceStatsDesc, m_stats, 5);
 
     m_numCqsActiveId = statsType->nameToId("CqsActive");
     m_numCqsCreatedId = statsType->nameToId("CqsCreated");

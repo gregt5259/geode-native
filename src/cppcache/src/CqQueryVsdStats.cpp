@@ -26,6 +26,9 @@
 
 #include "util/concurrent/spinlock_mutex.hpp"
 
+const char* cqStatsName = "CqQueryStatistics";
+const char* cqStatsDesc = "Statistics for this cq query";
+
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace apache {
@@ -62,7 +65,7 @@ StatisticsType* CqQueryStatType::getStatType() {
         "events", "The total number of events for this cq query", "entries",
         largerIsBetter);
 
-    statsType = factory->createType(statsName, statsDesc, m_stats, 4);
+    statsType = factory->createType(cqStatsName, cqStatsDesc, m_stats, 4);
 
     m_numInsertsId = statsType->nameToId("inserts");
     m_numUpdatesId = statsType->nameToId("updates");
