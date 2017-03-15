@@ -25,7 +25,6 @@
 #include "PooledBase.hpp"
 #include <deque>
 
-#include <mutex>
 #include "util/concurrent/spinlock_mutex.hpp"
 
 namespace apache {
@@ -41,46 +40,13 @@ class CPPCACHE_EXPORT PooledBasePool {
  public:
   PooledBasePool() : m_poolLock(), m_pooldata() {}
 
-  ~PooledBasePool() {
-    std::lock_guard<spinlock_mutex> guard(m_poolLock);
-    while (!m_pooldata.empty()) {
-      PooledBase* item = m_pooldata.front();
-      m_pooldata.pop_front();
-      delete item;
-    }
-  }
+  ~PooledBasePool();
 
-  inline void returnToPool(PooledBase* poolable) {
-    poolable->prePool();
-    {
-      std::lock_guard<spinlock_mutex> guard(m_poolLock);
-      m_pooldata.push_back(const_cast<PooledBase*>(poolable));
-    }
-  }
+  void returnToPool(PooledBase* poolable);
 
-  inline PooledBase* takeFromPool() {
-    PooledBase* result = nullptr;
-    {
-      std::lock_guard<spinlock_mutex> guard(m_poolLock);
-      if (!m_pooldata.empty()) {
-        result = m_pooldata.front();
-        m_pooldata.pop_front();
-      }
-    }
-    if (result != nullptr) {
-      result->postPool();
-    }
-    return result;
-  }
+  PooledBase* takeFromPool();
 
-  inline void clear() {
-    std::lock_guard<spinlock_mutex> guard(m_poolLock);
-    while (!m_pooldata.empty()) {
-      PooledBase* item = m_pooldata.front();
-      m_pooldata.pop_front();
-      delete item;
-    }
-  }
+  void clear();
 };
 }  // namespace client
 }  // namespace geode

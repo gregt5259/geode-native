@@ -17,18 +17,28 @@
 
 #include <geode/SharedBase.hpp>
 
-#include <typeinfo>
+#include <atomic>
+#include <memory>
+#include <functional>
 
 namespace apache {
 namespace geode {
 namespace client {
 
+using Counter = std::atomic<int32_t>;
+
+SharedBase::SharedBase() : m_refCount((void*) new Counter(0), [](void* ptr){
+  delete reinterpret_cast<Counter*>(ptr);
+}) {}
+
+int32_t SharedBase::refCount() { return *reinterpret_cast<Counter*>(m_refCount.get()); }
+
 void SharedBase::preserveSB() const {
-  ++const_cast<SharedBase*>(this)->m_refCount;
+  ++*reinterpret_cast<Counter*>(this->m_refCount.get());
 }
 
 void SharedBase::releaseSB() const {
-  if (--const_cast<SharedBase*>(this)->m_refCount == 0) {
+  if (--*reinterpret_cast<Counter*>(this->m_refCount.get()) == 0) {
     delete this;
   }
 }

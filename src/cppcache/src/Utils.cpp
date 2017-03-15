@@ -22,15 +22,19 @@
 #include <cstdio>
 #include <chrono>
 
+#ifdef _WIN32
+
 namespace apache {
 namespace geode {
 namespace client {
 
-#ifdef _WIN32
-
 pNew Utils::s_pNew = NULL;
 pDelete Utils::s_pDelete = NULL;
 bool Utils::s_setNewAndDelete = false;
+
+}  // namespace client
+}  // namespace geode
+}  // namespace apache
 
 void* operator new(size_t size) {
   if (!Utils::s_pNew) {
@@ -51,6 +55,10 @@ void* operator new[](size_t size) { return operator new(size); }
 void operator delete[](void* p) { operator delete(p); }
 
 #endif  // _WIN32
+
+namespace apache {
+namespace geode {
+namespace client {
 
 int RandGen::operator()(size_t max) {
   unsigned int seed = static_cast<unsigned int>(

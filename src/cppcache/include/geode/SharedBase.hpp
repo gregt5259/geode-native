@@ -22,7 +22,9 @@
  * limitations under the License.
  */
 
-#include <atomic>
+#include <memory>
+#include <functional>
+
 #include "geode_globals.hpp"
 
 /** @file
@@ -41,7 +43,7 @@ namespace client {
 class CPPCACHE_EXPORT SharedBase {
  public:
   /** Constructor. */
-  inline SharedBase() : m_refCount(0) {}
+  SharedBase();
 
   /** Atomically increment reference count */
   void preserveSB() const;
@@ -53,16 +55,17 @@ class CPPCACHE_EXPORT SharedBase {
   void releaseSB() const;
 
   /** @return the reference count */
-  inline int32_t refCount() { return m_refCount; }
+  int32_t refCount();
 
  protected:
   inline SharedBase(bool noInit) {}
-  inline SharedBase(const SharedBase&) {}
+  inline SharedBase(const SharedBase&) : SharedBase() {};
 
-  virtual ~SharedBase() {}
+  virtual ~SharedBase() {};
 
  private:
-  std::atomic<int32_t> m_refCount;
+  // workaround for std::atomic not allowed in managed code.
+  mutable std::unique_ptr<void, std::function<void(void*)>> m_refCount;
 
   void operator=(const SharedBase& rhs);
 };
